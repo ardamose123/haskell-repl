@@ -48,9 +48,9 @@ printAmbient = do
 defineFunction :: Name -> [String] -> Ambiented IO ()
 defineFunction n ["o", f1, f2] = do
 	fs  <- gets funs
-	f1' <- return $ fromJust $ lookup f1 fs
-	f2' <- return $ fromJust $ lookup f2 fs
-	modify $ addFun n $ (f1' . f2')
+	let f1' = fromJust $ lookup f1 fs
+	let f2' = fromJust $ lookup f2 fs
+	modify $ addFun n (f1' . f2')
 
 defineFunction n ("[]":args) = do
 	fs  <- gets funs
@@ -61,7 +61,7 @@ defineFunction n ("_" :args)   = modify $ addFun n $ const args
 substitute :: Value -> Ambiented IO Value
 substitute value = do
 	variables <- gets vars
-	return $ concatMap (\string -> maybe [string] id $ lookup string variables) value
+	return $ concatMap (\string -> fromMaybe [string] $ lookup string variables) value
 
 execFun :: Value -> Function -> Ambiented IO Value
 execFun value function = liftM function $ substitute value
@@ -86,12 +86,12 @@ initAmbient :: Ambient
 initAmbient = Ambient 
 	{ vars = []
 	, funs = 
-		[ ("first" , maybe [] (:[]) . safeApply head)
-		, ("last"  , maybe [] (:[]) . safeApply last)
-		, ("tail"  , maybe [] id . safeApply tail)
-		, ("chop"  , maybe [] id . safeApply init)
-		, ("rotr"  , maybe [] id . safeApply rotr)
-		, ("rotl"  , maybe [] id . safeApply rotl)
+		[ ("first" , maybeToList  . safeApply head)
+		, ("last"  , maybeToList  . safeApply last)
+		, ("tail"  , fromMaybe [] . safeApply tail)
+		, ("chop"  , fromMaybe [] . safeApply init)
+		, ("rotr"  , fromMaybe [] . safeApply rotr)
+		, ("rotl"  , fromMaybe [] . safeApply rotl)
 		, ("length", (:[]) . show . length)
 		, ("ident" , id)
 		]
