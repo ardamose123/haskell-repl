@@ -41,7 +41,7 @@ printAmbient = do
 	variables <- gets vars
 	forM_ variables $ \(k,v) -> lift $ putStrLn $ k ++ " = " ++ unwords v
 	lift $ putStrLn ""
-	lift $ putStrLn "Funciones"
+	lift $ putStrLn "Functions"
 	functions <- gets funs
 	lift $ putStrLn $ unwords $ map fst functions
 
